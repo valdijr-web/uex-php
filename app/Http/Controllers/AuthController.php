@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -96,7 +97,7 @@ class AuthController extends Controller
      * Enviar link de redefinição de senha.
      */
 
-    public function forgotPassword(Request $request): JsonResponse
+    public function sendPasswordResetLink(Request $request): JsonResponse
     {
         try {
             $validator = Validator::make($request->all(), [
