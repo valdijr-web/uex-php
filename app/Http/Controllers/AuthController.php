@@ -2,46 +2,35 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\PasswordResetRequest;
+use App\Http\Requests\PasswordSendEmailRequest;
+use App\Http\Requests\RegisterUserRequest;
+use App\Services\AuthService;
 use Exception;
-use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Facades\Validator;
+
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
+
+    protected AuthService $authService;
+
+    public function __construct(AuthService $authService)
+    {
+        $this->authService = $authService;
+    }
     /**
      * Registro do usuário.
      */
-    public function register(Request $request): JsonResponse
+    public function register(RegisterUserRequest $request): JsonResponse
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'name' => 'required|string',
-                'email' => 'required|string|email|max:255|unique:users',
-                'password' => 'required|string|min:5|confirmed'
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()], 422);
-            }
-
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-            ]);
-
-            $token = $user->createToken($user->name . 'authToken')->plainTextToken;
-            return response()->json([
-                'message' => 'Usuário registrado com sucesso.',
-                'user' => $user,
-                'token' => $token
-            ], 201);
+            
+            $response = $this->authService->register($request->validated());
+            return response()->json($response, 201);
         } catch (Exception $e) {
             return response()->json(['message' => 'Oops! Falha ao registrar usuário.', 'error' => $e->getMessage()], 500);
         }
@@ -50,31 +39,11 @@ class AuthController extends Controller
     /**
      * Login do usuário.
      */
-    public function login(Request $request): JsonResponse
+    public function login(LoginRequest $request): JsonResponse
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'email' => 'required|string|email',
-                'password' => 'required|string'
-            ]);
-            if ($validator->fails()) {
-                return response()->json(
-                    [
-                        'errors' => $validator->errors()
-                    ],
-                    422
-                );
-            }
-            $user = User::where('email', $request->email)->first();
-            if (!$user || !Hash::check($request->password, $user->password)) {
-                return response()->json(['message' => 'Credenciais inválidas.'], 401);
-            }
-            $token = $user->createToken($user->name . ' - authToken')->plainTextToken;
-            return response()->json([
-                'message' => 'Usuário logado com sucesso.',
-                'user' => $user,
-                'token' => $token
-            ], 200);
+            $response = $this->authService->login($request->email, $request->password);
+            return response()->json($response, 200);
         } catch (Exception $e) {
             return response()->json(['message' => 'Oops! Falha ao realizar login', 'error' => $e->getMessage()], 500);
         }
@@ -97,55 +66,24 @@ class AuthController extends Controller
      * Enviar link de redefinição de senha.
      */
 
-    public function sendPasswordResetLink(Request $request): JsonResponse
+    public function sendPasswordResetLink(PasswordSendEmailRequest $request): JsonResponse
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'email' => 'required|email|exists:users,email'
-            ]);
-            if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()], 422);
-            }
-            $status = Password::sendResetLink(
-                $request->only('email')
-            );
-            if ($status === Password::RESET_LINK_SENT) {
-                return response()->json(['message' => 'Link para redefinição de senha enviado por email.'], 200);
-            } else {
-                return response()->json(['email' => 'Não foi possível enviar o link de redefinição.'], 422);
-            }
+            $response = $this->authService->sendResetLink($request->email);
+            return response()->json($response, 200);
         } catch (Exception $e) {
             return response()->json(['message' => 'Oops! Falha na solicitação de redefinição de senha.', 'error' => $e->getMessage()], 500);
         }
     }
 
-    public function resetPassword(Request $request): JsonResponse
+    public function resetPassword(PasswordResetRequest $request): JsonResponse
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'token' => 'required',
-                'email' => 'required|email|exists:users,email',
-                'password' => 'required|string|min:5|confirmed'
-            ]);
-            if ($validator->fails()) {
-                return response()->json(['errors' => $validator->errors()], 422);
-            }
-            $status = Password::reset(
-                $request->only('email', 'password', 'password_confirmation', 'token'),
-                function ($user, $password) {
-                    $user->password = Hash::make($password);
-                    $user->setRememberToken(Str::random(60));
-                    $user->save();
+            $response = $this->authService->resetPassword($request->only(
+                'email', 'password', 'password_confirmation', 'token'
+            ));
 
-                    event(new PasswordReset($user));
-                }
-            );
-
-            if ($status === Password::PASSWORD_RESET) {
-                return response()->json(['message' => 'Senha redefinida com sucesso.'], 200);
-            } else {
-                return response()->json(['email' => 'Oops! Token ou e-mail inválido.'], 400);
-            }
+            return response()->json($response, 200);
         } catch (Exception $e) {
             return response()->json(['message' => 'Oops! Falha na redefinição da senha.', 'error' => $e->getMessage()], 500);
         }

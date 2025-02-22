@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use App\Models\User;
+use App\Repositories\ContactRepository;
+use App\Services\ContactService;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\ServiceProvider;
 
@@ -13,7 +15,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        //Criando o Binding de Dependências
+        $this->app->singleton(ContactRepository::class, function () {
+            return new ContactRepository();
+        });
+
+        $this->app->singleton(ContactService::class, function ($app) {
+            return new ContactService($app->make(ContactRepository::class));
+        });
     }
 
     /**
