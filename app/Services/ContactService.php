@@ -33,7 +33,7 @@ class ContactService
     private function getCoordinates($address, $number, $city, $state)
     {
         $fullAddress = urlencode("{$address}, {$number}, {$city} - {$state}");
-        $apiKey = 'AIzaSyCw1U0GTGrj0ihP4vO1sxjyc1Skra02-7g';//env('GOOGLE_MAPS_API_KEY'); // Defina sua chave no .env
+        $apiKey = env('GOOGLE_MAPS_API_KEY'); // Defina sua chave no .env
         $response = Http::get("https://maps.googleapis.com/maps/api/geocode/json", [
             'address' => $fullAddress,
             'key' => $apiKey
