@@ -4,9 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ContactController;
-
-
-
+use App\Http\Controllers\UserController;
 
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register'])->name('register');
@@ -18,6 +16,5 @@ Route::prefix('auth')->group(function () {
 });
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/contacts/store', [ContactController::class, 'store'])->name('contacts.store');
-
-    
+    Route::delete('/users/delete/account', [UserController::class, 'deleteAccount'])->name('users.deleteAccount');
 });

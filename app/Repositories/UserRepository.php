@@ -33,4 +33,19 @@ class UserRepository
         $user->setRememberToken(Str::random(60));
         $user->save();
     }
+
+    public function deleteUser(User $user): void
+    {
+        $user->delete();
+    }
+
+    public function deleteUserContacts(User $user): void
+    {
+        $user->contacts()->delete();
+    }
+
+    public function checkPassword(User $user, string $password): bool
+    {
+        return Hash::check($password, $user->password);
+    }
 }
