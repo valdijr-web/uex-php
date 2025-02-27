@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ContactListRequest;
 use App\Http\Requests\StoreContactRequest;
 use App\Models\Contact;
 use App\Services\ContactService;
@@ -17,23 +18,20 @@ class ContactController extends Controller
     {
         $this->contactService = $contactService;
     }
-    
+
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(ContactListRequest $request): JsonResponse
     {
-        //
-    }
+        $contacts = $this->contactService->listContacts($request->validated());
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+        if (!$contacts) {
+            return response()->json(['message' => 'Oops! Erro ao buscar contatos.'], 500);
+        }
 
+        return response()->json($contacts);
+    }
     /**
      * Store a newly created resource in storage.
      */
@@ -42,7 +40,7 @@ class ContactController extends Controller
         $result = $this->contactService->createContact($request->validated());
 
         if (isset($result['error'])) {
-            return response()->json(['message' => 'Oops! Falha ao cadastrar contato. '.$result['error']], 422);
+            return response()->json(['message' => 'Oops! Falha ao cadastrar contato. ' . $result['error']], 422);
         }
 
         return response()->json([
@@ -82,5 +80,4 @@ class ContactController extends Controller
     {
         //
     }
-
 }

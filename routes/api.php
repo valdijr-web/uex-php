@@ -17,6 +17,8 @@ Route::prefix('auth')->group(function () {
 });
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/contacts/store', [ContactController::class, 'store'])->name('contacts.store');
+    Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
+
     Route::delete('/users/delete/account', [UserController::class, 'deleteAccount'])->name('users.deleteAccount');
     Route::get('/search/address', [AddressController::class, 'getAddressByZip'])->name('search.address');
 

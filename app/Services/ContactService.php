@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Repositories\ContactRepository;
+use Exception;
 use Illuminate\Support\Facades\Http;
 
 class ContactService
@@ -44,5 +45,10 @@ class ContactService
         }
 
         return null;
+    }
+
+    public function listContacts(array $filters)
+    {
+        return $this->contactRepository->getContacts($filters);
     }
 }

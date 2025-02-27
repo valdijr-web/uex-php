@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repositories;
 
 use App\Models\Contact;
@@ -24,5 +25,31 @@ class ContactRepository
 
         $contact->save();
         return $contact;
+    }
+
+    public function getContacts(array $filters)
+    {
+        try {
+            $query = Contact::where('user_id', Auth::id());
+
+            if (!empty($filters['name'])) {
+                $query->where('name', 'LIKE', "%{$filters['name']}%");
+            }
+
+            if (!empty($filters['cpf'])) {
+                $query->where('cpf', $filters['cpf']);
+            }
+
+            return $query->orderBy('name', 'asc')
+                ->paginate(
+                    $filters['limit'] ?? 10, // Número de itens por página
+                    ['*'], // Seleciona todas as colunas
+                    'page', // Nome do parâmetro da página
+                    $filters['page'] ?? 1 // Página atual (padrão: 1)
+                );
+        } catch (Exception $e) {
+            Log::error("Erro ao listar contatos: " . $e->getMessage());
+            return null;
+        }
     }
 }
