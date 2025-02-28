@@ -7,8 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
-
-class StoreContactRequest extends FormRequest
+class UpdateContactRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -27,7 +26,13 @@ class StoreContactRequest extends FormRequest
     {
         return [
             'name'         => ['required', 'string', 'max:255'],
-            'cpf'          => ['required', 'string', 'size:14', new Cpf(), Rule::unique('contacts')->where('user_id', Auth::id())],
+            'cpf'          => [
+                'required',
+                'string',
+                'size:14',
+                new Cpf(),
+                Rule::unique('contacts')->ignore($this->route('contact'))->where('user_id', Auth::id())
+            ],
             'phone'        => ['required', 'string', 'max:20'],
             'zip_code'     => ['required', 'string', 'max:9','regex:/^\d{5}-?\d{3}$/'],
             'address'      => ['required', 'string', 'max:255'],

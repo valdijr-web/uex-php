@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\User;
 use App\Repositories\UserRepository;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -30,10 +31,10 @@ class UserService
             $this->userRepository->deleteUser($user);
             DB::commit();
             return true;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             DB::rollBack();
-            Log::error('Erro durante a transação: ' . $e->getMessage());
-            return false;
+            Log::error('Erro ao tentar excluir conta de usuário: ' . $e->getMessage());
+            throw new Exception('Falha ao excluir conta de usuário.' . $e->getMessage());
         }
     }
 }

@@ -3,6 +3,8 @@
 namespace App\Services;
 
 use App\Repositories\ViaCepRepository;
+use Exception;
+use Illuminate\Support\Facades\Log;
 
 class ViaCepService
 {
@@ -15,37 +17,47 @@ class ViaCepService
 
     public function getAddressByZipCode(string $zipCode): ?array
     {
-        $zipCode = preg_replace('/[^0-9]/', '', $zipCode);
-        $address =  $this->viaCepRepository->getAddressByZipCode($zipCode);
-        if (!$address) {
-            return null;
+        try {
+            $zipCode = preg_replace('/[^0-9]/', '', $zipCode);
+            $address =  $this->viaCepRepository->getAddressByZipCode($zipCode);
+            if (isset($address['erro']) && $address['erro']) {
+                return null;
+            }
+            return [
+                'zip_code'     => $address['cep'],
+                'address'      => $address['logradouro'],
+                'neighborhood' => $address['bairro'],
+                'city'         => $address['localidade'],
+                'state'        => $address['uf']
+            ];
+        } catch (Exception $e) {
+            Log::error("Falha buscar endereço por cep: {$zipCode} - " . $e->getMessage());
+            throw new Exception('Falha ao buscar endereço por cep.' . $e->getMessage());
         }
-        return [
-            'zip_code'     => $address['cep'],
-            'address'      => $address['logradouro'],
-            'neighborhood' => $address['bairro'],
-            'city'         => $address['localidade'],
-            'state'        => $address['uf']
-        ];
     }
 
     public function findSuggestionsAddresses(string $state, string $city, string $address): ?array
     {
-        $address = str_replace(" ", "+", $address);
-        $suggestions = $this->viaCepRepository->findSuggestionsAddresses($state, $city, $address);
+        try {
+            $address = str_replace(" ", "+", $address);
+            $suggestions = $this->viaCepRepository->findSuggestionsAddresses($state, $city, $address);
+            
+            if (!$suggestions) {
+                return null;
+            }
 
-        if (!$suggestions) {
-            return null;
+            return collect($suggestions)->map(function ($item) {
+                return [
+                    'zip_code'     => $item['cep'],
+                    'address'      => $item['logradouro'],
+                    'neighborhood' => $item['bairro'],
+                    'city'         => $item['localidade'],
+                    'state'        => $item['uf']
+                ];
+            })->toArray();
+        } catch (Exception $e) {
+            Log::error("Falha buscar endereço: {$zipCode} - " . $e->getMessage());
+            throw new Exception('Falha ao buscar endereço.' . $e->getMessage());
         }
-
-        return collect($suggestions)->map(function ($item) {
-            return [
-                'zip_code'     => $item['cep'],
-                'address'      => $item['logradouro'],
-                'neighborhood' => $item['bairro'],
-                'city'         => $item['localidade'],
-                'state'        => $item['uf']
-            ];
-        })->toArray();
     }
 }

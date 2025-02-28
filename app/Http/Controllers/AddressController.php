@@ -25,7 +25,7 @@ class AddressController extends Controller
             $zipCode = $request->input('zip_code');
             $address = $this->viaCepService->getAddressByZipCode($zipCode);
 
-            if (!$address) {
+            if ($address === null) {
                 return response()->json(['message' => 'CEP não encontrado.'], 404);
             }
 
@@ -43,7 +43,6 @@ class AddressController extends Controller
             $address = $request->input('address');
 
             $suggestions = $this->viaCepService->findSuggestionsAddresses($state, $city, $address);
-
             if (!$suggestions) {
                 return response()->json(['message' => 'Nenhum endereço encontrado.'], 404);
             }
