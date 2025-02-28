@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->string('name');
-            $table->string('cpf', 11)->unique(); // Cpf único
+            $table->string('cpf', 11);
             $table->string('phone', 20);
             $table->string('zip_code', 8);
             $table->string('address');

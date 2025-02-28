@@ -25,9 +25,11 @@ class StoreContactRequest extends FormRequest
      */
     public function rules(): array
     {
+        $this->merge(['cpf' => $this->clearCpf($this->cpf)]);
+        
         return [
             'name'         => ['required', 'string', 'max:255'],
-            'cpf'          => ['required', 'string', 'size:14', new Cpf(), Rule::unique('contacts')->where('user_id', Auth::id())],
+            'cpf'          => ['required', 'string', 'max:14', new Cpf(), Rule::unique('contacts')->where('user_id', Auth::id())],
             'phone'        => ['required', 'string', 'max:20'],
             'zip_code'     => ['required', 'string', 'max:9','regex:/^\d{5}-?\d{3}$/'],
             'address'      => ['required', 'string', 'max:255'],
@@ -36,6 +38,19 @@ class StoreContactRequest extends FormRequest
             'city'         => ['required', 'string', 'max:255'],
             'state'        => ['required', 'string', 'size:2'],
             'complement'   => ['nullable', 'string', 'max:255'],
+        ];
+    }
+
+    private function clearCpf($cpf)
+    {
+        return preg_replace('/[^0-9]/', '', $cpf);
+    }
+
+    public function messages(): array
+    {
+        return [
+            'cpf.unique' => 'O CPF informado já foi utilizado.',
+           
         ];
     }
 }

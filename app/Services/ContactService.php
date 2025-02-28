@@ -30,7 +30,6 @@ class ContactService
             $data['latitude'] = $geolocation['lat'];
             $data['longitude'] = $geolocation['lng'];
             $data['user_id'] = Auth::id();
-            $data['cpf'] = preg_replace('/\D/', '', $data['cpf']); // Remover formatação do CPF
 
             return $this->contactRepository->create($data);
         } catch (Exception $e) {
@@ -85,7 +84,7 @@ class ContactService
             'address' => $fullAddress,
             'key' => $apiKey
         ]);
-        
+
         if ($response->successful() && isset($response['results'][0]['geometry']['location'])) {
             return $response['results'][0]['geometry']['location'];
         }
