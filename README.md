@@ -1,4 +1,4 @@
-# 📌 API de Contatos - Desafio Uex
+# 📌 API de Contatos - Desafio Uex.io
 
 ### API para gerenciamento de contatos, incluindo cadastro, edição, exclusão, busca e integração com o **Google Maps API** e **ViaCEP** para preenchimento automático de endereços.
 
