@@ -20,6 +20,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
     Route::put('/contacts/{contact}', [ContactController::class, 'update'])->name('contacts.update');
     Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
+    Route::get('/contacts/{contact}/coordinates', [ContactController::class, 'getCoordinates']);
     
     Route::delete('/users/delete/account', [UserController::class, 'deleteAccount'])->name('users.deleteAccount');
     Route::get('/search/address', [AddressController::class, 'getAddressByZip'])->name('search.address');

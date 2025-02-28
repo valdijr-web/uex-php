@@ -74,4 +74,20 @@ class ContactController extends Controller
             return response()->json(['message' => 'Oops! Erro interno no servidor.' . $e->getMessage()], 500);
         }
     }
+
+    public function getCoordinates(Contact $contact): JsonResponse
+    {
+        try {
+            $coordinates = $this->contactService->getContactCoordinates($contact);
+
+            if (!$coordinates) {
+                return response()->json(['message' => 'Contato não possui coordenadas registradas.'], 404);
+            }
+
+            return response()->json($coordinates);
+        } catch (Exception $e) {
+            Log::error("Erro ao buscar coordenadas: " . $e->getMessage());
+            return response()->json(['message' => 'Erro interno no servidor.'. $e->getMessage()], 500);
+        }
+    }
 }

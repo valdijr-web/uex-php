@@ -23,6 +23,8 @@ class ContactRepository
         $contact->city = $data['city'];
         $contact->state = $data['state'];
         $contact->complement = $data['complement'];
+        $contact->latitude = $data['latitude'];
+        $contact->longitude = $data['longitude'];
         $contact->save();
         return $contact;
     }
@@ -72,5 +74,17 @@ class ContactRepository
                 'page', // Nome do parâmetro da página
                 $filters['page'] ?? 1 // Página atual (padrão: 1)
             );
+    }
+
+    public function getCoordinates(Contact $contact): ?array
+    {
+        if (is_null($contact->latitude) || is_null($contact->longitude)) {
+            return null;
+        }
+
+        return [
+            'latitude' => $contact->latitude,
+            'longitude' => $contact->longitude
+        ];
     }
 }

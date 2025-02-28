@@ -85,11 +85,21 @@ class ContactService
             'address' => $fullAddress,
             'key' => $apiKey
         ]);
-
+        
         if ($response->successful() && isset($response['results'][0]['geometry']['location'])) {
             return $response['results'][0]['geometry']['location'];
         }
 
         return null;
+    }
+
+    public function getContactCoordinates(Contact $contact): ?array
+    {
+        try {
+            return $this->contactRepository->getCoordinates($contact);
+        } catch (Exception $e) {
+            Log::error("Erro ao buscar coordenadas do contato ID {$contact->id}: " . $e->getMessage());
+            throw new Exception('Falha ao buscar coordenadas do contato.');
+        }
     }
 }
