@@ -23,8 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/contacts/{contact}/coordinates', [ContactController::class, 'getCoordinates']);
     
     Route::delete('/users/delete/account', [UserController::class, 'deleteAccount'])->name('users.deleteAccount');
-    Route::get('/search/address', [AddressController::class, 'getAddressByZip'])->name('search.address');
-
+    
     Route::get('/address/zipcode', [AddressController::class, 'getAddressByZipCode'])->name('address.zipcode');
     Route::get('/address/suggestions', [AddressController::class, 'getSuggestionsAddress'])->name('address.suggestions');
 });
