@@ -28,7 +28,8 @@ class ViaCepService
                 'address'      => $address['logradouro'],
                 'neighborhood' => $address['bairro'],
                 'city'         => $address['localidade'],
-                'state'        => $address['uf']
+                'state'        => $address['uf'],
+                'complement'   => $address['complemento']
             ];
         } catch (Exception $e) {
             Log::error("Falha buscar endereço por cep: {$zipCode} - " . $e->getMessage());
@@ -52,11 +53,12 @@ class ViaCepService
                     'address'      => $item['logradouro'],
                     'neighborhood' => $item['bairro'],
                     'city'         => $item['localidade'],
-                    'state'        => $item['uf']
+                    'state'        => $item['uf'],
+                    'complement'   => $item['complemento']
                 ];
             })->toArray();
         } catch (Exception $e) {
-            Log::error("Falha buscar endereço: {$zipCode} - " . $e->getMessage());
+            Log::error("Falha buscar endereço: " . $e->getMessage());
             throw new Exception('Falha ao buscar endereço.' . $e->getMessage());
         }
     }
