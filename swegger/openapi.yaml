@@ -1,0 +1,377 @@
+openapi: 3.0.3
+info:
+  title: API de Contatos e Autenticação
+  description: API para gerenciamento de contatos, incluindo cadastro, edição, exclusão, busca e integração com o **Google Maps API** e **ViaCEP** para preenchimento automático de endereços.
+  version: 1.0.0
+  contact:
+    name: Suporte
+    email: suporte@uex.io
+    url: https://uex.io
+servers:
+- url: http://localhost/api/
+  description: API de Teste
+paths:
+  /auth/register:
+    post:
+      summary: Registra um novo usuário.
+      tags:
+        - Autenticação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegister'
+      responses:
+        '201':
+          description: Usuário registrado com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+        '422':
+          description: Erro de validação dos dados.
+  /auth/login:
+    post:
+      summary: Realiza o login do usuário.
+      tags:
+        - Autenticação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
+      responses:
+        '200':
+          description: Login realizado com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+        '401':
+          description: Credenciais inválidas.
+  /auth/logout:
+    post:
+      summary: Realiza o logout do usuário.
+      tags:
+        - Autenticação
+      security:
+        - sanctum: []
+      responses:
+        '200':
+          description: Usuário deslogado com sucesso.
+  /auth/password/email:
+    post:
+      summary: Envia um link de redefinição de senha para o email.
+      tags:
+        - Autenticação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+              required:
+                - email
+      responses:
+        '200':
+          description: Link de redefinição enviado com sucesso.
+  /auth/password/reset:
+    post:
+      summary: Redefine a senha do usuário.
+      tags:
+        - Autenticação
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                password_confirmation:
+                  type: string
+              required:
+                - token
+                - email
+                - password
+                - password_confirmation
+      responses:
+        '200':
+          description: Senha redefinida com sucesso.
+  /contacts:
+    post:
+      summary: Cria um novo contato.
+      tags:
+        - Contatos
+      security:
+        - sanctum: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactInput'
+      responses:
+        '201':
+          description: Contato cadastrado com sucesso.
+    get:
+      summary: Lista todos os contatos do usuário autenticado.
+      tags:
+        - Contatos
+      security:
+        - sanctum: []
+      parameters: 
+        - name: page
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: string
+        
+      responses:
+        '200':
+          description: Lista de contatos.
+  /contacts/{contact}:
+    put:
+      summary: Atualiza um contato existente.
+      tags:
+        - Contatos
+      security:
+        - sanctum: []
+      parameters:
+        - name: contact
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactInput'
+
+      responses:
+        '200':
+          description: Contato atualizado com sucesso.
+    delete:
+      summary: Deleta um contato.
+      tags:
+        - Contatos
+      security:
+        - sanctum: []
+      parameters:
+        - name: contact
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Contato excluído com sucesso.
+  /contacts/{contact}/coordinates:
+    get:
+      summary: Retorna as coordenadas de um contato.
+      tags:
+        - Contatos
+      security:
+        - sanctum: []
+      parameters:
+        - name: contact
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Coordenadas do contato.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  latitude:
+                    type: number
+                  longitude:
+                    type: number
+        '404':
+          description: Contato não possui coordenadas registradas.
+          
+  /users/delete/account:
+    delete:
+      summary: Deleta a conta do usuário autenticado.
+      tags:
+        - Usuários
+      security:
+        - sanctum: []
+      parameters:
+        - name: password
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Conta excluída com sucesso.
+        '401':
+          description: Senha incorreta.
+
+  /address/zipcode:
+    get:
+      summary: Busca endereço por CEP.
+      tags:
+        - Pesquisa de Endereços
+      security:
+        - sanctum: []
+      parameters:
+        - name: zip_code
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Endereço encontrado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
+  /address/suggestions:
+    get:
+      summary: Retorna sugestões de endereços.
+      tags:
+        - Pesquisa de Endereços
+      security:
+        - sanctum: []
+      parameters:
+        - name: state
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: city
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: address
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Sugestões de endereços.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Addresses'
+
+components:
+  securitySchemes:
+    sanctum:
+      type: http
+      scheme: bearer
+      bearerFormat: sanctum
+  schemas:
+    UserRegister:
+      type: object
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+        password_confirmation:
+          type: string
+      required:
+        - name
+        - email
+        - password
+        - password_confirmation
+    UserLogin:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+        - email
+        - password
+    ContactInput:
+      type: object
+      properties:
+        name:
+          type: string
+        cpf:
+          type: string
+        phone:
+          type: string
+        zip_code:
+          type: string
+        address:
+          type: string
+        number:
+          type: string
+        neighborhood:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        complement:
+          type: string
+      required:
+        - name
+        - cpf
+        - phone
+        - zip_code
+        - address
+        - number
+        - neighborhood
+        - city
+        - state
+    Address:
+      type: object
+      properties:
+        zip_code:
+          type: string
+        address:
+          type: string
+        neighborhood:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        complement:
+          type: string
+    Addresses:
+      type: array
+      items:
+        $ref: "#/components/schemas/Address"
+      
