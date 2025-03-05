@@ -13,6 +13,7 @@
 - **Sanctum (Autenticação)**
 - **ViaCEP (Consulta de Endereços)**
 - **PHPUnit (Testes Unitários e de Feature)**
+- **Swegger (Documentação de API)**
 
 ---
 
